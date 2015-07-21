@@ -1,9 +1,7 @@
 import zipfile
 import pandas as pd
 #import numpy as np
-#import requests
 
-#import seaborn as sns
 import matplotlib.pyplot as plt
 
 z = zipfile.ZipFile('../train.csv.zip')
@@ -42,10 +40,13 @@ bcrime_type = bcrime_type[::-1]
 #plt.tight_layout()
 #plt.savefig('Top Crime Zones.png', figsize=(8,12))
 
-fig, ax = plt.subplots(figsize=(3,2))
+fig, ax = plt.subplots(figsize=(12,8))
 crime_type.plot(kind='barh', title='Top Crimes Committed', ax=ax)
 plt.tight_layout()
-plt.savefig('crime-histo.png', figsize=(2,3))
+plt.savefig('crime-histo.png', figsize=(8,12))
+
+## histogram frequencies are in pandas frame, crime_type
+
 
 #fig, ax = plt.subplots(figsize=(12,8))
 #bcrime_type.plot(kind='barh', title='Top Crimes Committed', ax=ax)
