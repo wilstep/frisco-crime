@@ -1,0 +1,282 @@
+import pandas as pd
+import numpy as np
+
+#Ncm = 30 # minimum crimes in each category
+#Amin = 1000 # minimum counts to use address
+#Gmin = 1500 # min count to use grid
+# 23,228 addresses in training data
+#Ngl1 = 120 #46 # Ngl x Ngl grid, 46 x 46 = 2116, 40
+#Ntgl1 = Ngl1 * Ngl1
+#Ngl2 = 40 #15 # Ngl x Ngl grid, 15 x 15 = 225, 12
+#Ntgl2 = Ngl1 * Ngl1
+
+
+class grid:
+   "Ncm: minimum crimes per category, ccl: crime category list, min max of grid coords"
+   "ccl, put integer in get cc out"
+   def __init__(self, xmin, xmax, ymin, ymax, Ngl1, Ngl2):
+      #Grid stuff
+      self.Ngl1 = Ngl1
+      self.Ngl2 = Ngl2
+      self.xl = xmax - xmin # total grid length
+      self.yl = ymax - ymin
+      self.x0 = xmin
+      self.y0 = ymin
+      self.dx1 = self.xl / (Ngl1 + 0.0)
+      self.dy1 = self.yl / (Ngl1 + 0.0)
+      self.dx2 = self.xl / (Ngl2 + 0.0)
+      self.dy2 = self.yl / (Ngl2 + 0.0)   
+      
+      
+   def train(self, df, Ncm1, Ncm2):
+      self.Ncm1 = Ncm1
+      self.Ncm2 = Ncm2
+      # Training: first get lists of crime categories
+      self.ccl = df.Category.unique()
+      self.ccl.sort() # now have array of crime categories as func of ints
+      self.Ncc = len(self.ccl) 
+      self.iccl = pd.DataFrame(data = np.arange(self.Ncc, dtype=np.int), index = self.ccl)
+      self.iccl = self.iccl[0] # cc index, put cc in, get int out
+      # Address Histogram
+      ax = df.groupby(['Address', 'Category'])      
+      self.addyN = ax.size() # crime numbers for each address
+      print "number of crimes in training data: {0}".format(len(df))
+      Naddys = df.Address.unique()
+      Na = len(Naddys) # number of unique addresses in training data
+      print "number of unique addresses in training data %d" % Na
+      self.addyNex = self.getExN(Na, self.addyN, Naddys, self.Ncm1)
+      # now make first grid
+      #mask = df.apply(lambda x: self.addyN[x['Address']][x['Category']] < self.Ncm1, axis=1) 
+      #self.dfg1 = df[mask]
+      self.dfg1 = df.copy() # deep copy
+      #print "number of crimes taken by addresses: %d" % (len(df) - len(self.dfg1))
+      self.dfg1['grid1'] = self.dfg1.apply(lambda x: self.fcell(x['X'], x['Y'], self.dx1, self.dy1, self.Ngl1), axis=1)
+      print "Now do grid 1"
+      gx1 = self.dfg1.groupby(['grid1', 'Category'])
+      # Grid1 Histogram
+      self.grid1N = gx1.size()
+      ############print self.grid1N
+      self.gcnt = 0
+      # now make second grid
+      #mask = self.dfg1.apply(lambda x: self.gmask(self.grid1N[x['grid1']][x['Category']], x['grid1']), axis=1)
+      #print "number of crimes taken by grid1: %d" % self.gcnt
+      #self.dfg2 = self.dfg1[mask]
+      self.dfg2 = df.copy() # deep copy
+      self.dfg2['grid2'] = self.dfg2.apply(lambda x: self.fcell(x['X'], x['Y'], self.dx2, self.dy2, self.Ngl2), axis=1)
+      gx2 = self.dfg2.groupby(['grid2', 'Category'])
+      # Grid2 Histogram
+      self.grid2N = gx2.size()
+      self.gcnt = 0
+      # now make PD mask
+      #mask = self.dfg2.apply(lambda x: self.gmask(self.grid2N[x['grid2']][x['Category']], x['grid2']), axis=1)
+      #print "number of crimes taken by grid2: %d" % self.gcnt  
+      #self.dfpd = self.dfg2[mask]
+      self.dfpd = df.copy() # deep copy
+      print "number of crimes taken by PD: %d" % len(self.dfpd)  
+      pdx = self.dfpd.groupby(['PdDistrict', 'Category'])
+      # PD Histogram
+      self.PDN = pdx.size() 
+      
+      
+   def predict(self, addy, X, Y, PD):
+      # dat: Address, X, Y, PdDistrict
+      probs = np.zeros(self.Ncc) # Array of probabilities
+      mask = np.empty(self.Ncc, dtype = np.bool)
+      mask.fill(False)
+      nf = 0
+      try:
+         aN = self.addyN[addy] # work on addresses first
+      except KeyError:
+         probs = self.recurG1(1, mask, X, Y, PD)
+         probs /= probs.sum()
+         return probs
+      for i in range(self.Ncc):
+         crm = self.ccl[i]
+         try:
+            aNc = aN[crm]
+         except KeyError:
+            aNc = 0
+         if aNc >= self.Ncm1:
+            mask[i] = True # got enough so mask set to true
+            probs[i] = aNc + 0.0
+         else:
+            mask[i] = False
+            nf += 1
+            j = i
+            probs[i] = 0.0
+      if nf == 0: 
+         probs /= probs.sum()
+         return probs
+      if nf == 1: # Only 1 prob left, use left over crimes for it
+         crm = self.ccl[j]
+         try:
+            aNc = aN[crm]
+         except KeyError:
+            aNc = 0
+         probs[j] = aNc + 0.0
+         probs /= probs.sum()
+         return probs
+      probs += self.recurG1(self.addyNex[addy], mask, X, Y, PD)
+      probs /= probs.sum()
+      return probs
+      
+      
+   def recurG1(self, Nex, pmask, X, Y, PD):
+      probs = np.zeros(self.Ncc) # Array of probabilities
+      mask = pmask.copy()
+      # mask = copy.deepcopy(pmask)
+      j = n1 = n2 = ncp1 = ncp2 = 0
+      ig = self.fcell(X, Y, self.dx1, self.dy1, self.Ngl1)
+      if(ig == -1):
+         # no valid (X, Y) coords, straight to the PD
+         return self.recurPD(Nex, mask, PD)
+      for i in range(self.Ncc):
+         if not mask[i]:
+            cc = self.ccl[i]
+            try:
+               g1Nc = self.grid1N[ig][cc]
+            except KeyError:
+               g1Nc = 0
+            except IndexError:
+               g1Nc = 0
+            ncp1 += g1Nc
+            n1 += 1
+            if g1Nc >= self.Ncm2:
+               n2 += 1
+               mask[i] = True
+               probs[i] = g1Nc + 0.0
+               ncp2 += g1Nc
+            else:
+               j = i
+      if ncp1 > 0: norm = (Nex + 0.0) / (ncp1 + 0.0)
+      else: norm = 1.0 # all probs are zero
+      nd = n1 - n2
+      if nd == 0:
+         probs *= norm
+         return probs
+      if nd == 1:
+         cc = self.ccl[j]
+         try:
+            probs[j] = self.grid1N[ig][cc] + 0.0
+         except KeyError:
+            probs[j] = 0.0
+         except IndexError:
+            probs[j] = 0.0
+         probs *= norm
+         return probs
+      if ncp2 > 0: Nrem = (Nex + 0.0) * (ncp1 - ncp2 + 0.0) / ncp1 
+      else: Nrem = Nex
+      probs *= norm      
+      probs += self.recurG2(Nrem, mask, X, Y, PD)   
+      return probs                        
+      
+     
+   def recurG2(self, Nex, pmask, X, Y, PD):  
+      probs = np.zeros(self.Ncc) # Array of probabilities
+      mask = pmask.copy()
+      # mask = copy.deepcopy(pmask)
+      j = n1 = n2 = ncp1 = ncp2 = 0
+      ig = self.fcell(X, Y, self.dx2, self.dy2, self.Ngl2)
+      if(ig == -1):
+         # no valid (X, Y) coords, straight to the PD
+         return self.recurPD(Nex, mask, PD)
+      for i in range(self.Ncc):
+         if not mask[i]:
+            cc = self.ccl[i]
+            try:
+               g2Nc = self.grid2N[ig][cc]
+            except KeyError:
+               g2Nc = 0
+            except IndexError:
+               g2Nc = 0
+            ncp1 += g2Nc
+            n1 += 1
+            if g2Nc >= self.Ncm2:
+               n2 += 1
+               mask[i] = True
+               probs[i] = g2Nc + 0.0
+               ncp2 += g2Nc
+            else:
+               j = i
+      if ncp1 > 0: norm = Nex / (ncp1 + 0.0)
+      else: norm = 1.0 # all probs are zero
+      nd = n1 - n2
+      if nd == 0:
+         probs *= norm
+         return probs
+      if nd == 1:
+         cc = self.ccl[j]
+         try:
+            g2Nc = self.grid2N[ig][cc]
+         except KeyError:
+            g2Nc = 0
+         except IndexError:
+            g2Nc = 0
+         probs[j] = g2Nc + 0.0
+         probs *= norm
+         return probs
+      if ncp2 > 0: Nrem = (Nex + 0.0) * (ncp1 - ncp2 + 0.0) / ncp1 
+      else: Nrem = Nex
+      probs *= norm      
+      probs += self.recurPD(Nrem, mask, PD)   
+      return probs    
+            
+
+   def recurPD(self, Nex, mask, PD):
+      probs = np.zeros(self.Ncc) # Array of probabilities
+      ncp = 0
+      for i in range(self.Ncc):
+         if not mask[i]:
+            cc = self.ccl[i]
+            try:
+               ncp += self.PDN[PD][cc]
+               probs[i] = self.PDN[PD][cc] + 0.0
+            except KeyError:
+               pass
+      norm = (Nex + 0.0) / (ncp + 0.0)
+      probs *= norm
+      return probs      
+      
+
+   def fcell(self, x, y, dx, dy, Ngl):
+      if y > 40.0:
+         return -1
+      ix = int((x - self.x0) / dx)
+      iy = int((y - self.y0) / dy)
+      ig = iy * Ngl + ix  
+      return ig
+
+
+   def gmask(self, N, x):
+      if x == -1: return True # keep those out of grid for later
+      if N < self.Ncm2:
+         return True
+      self.gcnt += 1 # count up
+      return False   
+
+
+   def getExN(self, Na, ar, ind, Ncm):
+      ae = pd.DataFrame(data = np.zeros(Na, dtype=np.int), index = ind)
+      ae = ae[0]
+      for i in ind:
+         ne = 0
+         try:
+            ari = ar[i]
+            for j in range(self.Ncc): 
+               cc = self.ccl[j] # crime category
+               try:
+                  n = ari[cc]
+               except KeyError:
+                  n = 0
+               except IndexError:
+                  n = 0
+               if n < Ncm: ne += n
+         except IndexError:
+            pass
+         except KeyError:
+            pass
+         ae[i] = ne
+      return ae
+   
+
+
