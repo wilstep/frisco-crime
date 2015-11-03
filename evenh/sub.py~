@@ -10,14 +10,6 @@ from datetime import datetime
 from sklearn.cross_validation import train_test_split
 from grid import grid
 
-#Amin = 1000 # minimum counts to use address
-#Gmin = 1500 # min count to use grid
-#Ngl1 = 40 # Ngl x Ngl grid
-#Ntgl1 = Ngl1 * Ngl1     
-#Ngl2 = 12 # Ngl x Ngl grid
-#Ntgl2 = Ngl1 * Ngl1
-
-
 ## read training file
 z = zipfile.ZipFile('../train.csv.zip')
 dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
@@ -64,8 +56,6 @@ def Run(n):
    #Ngl2 = 10 + 2 * n
    mygrid = grid(xmin, xmax, ymin, ymax, Ngl1, 18)
    mygrid.train(df1, 6, 7)
-   # 59180 - trouble
-   # 30 should score 2.51
    print
    print "Run(n), Ngl1 = %d" % Ngl1
    #print "Run(n), Ngl2 = %d" % Ngl2

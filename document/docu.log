@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.9.24)  10 AUG 2015 15:08
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.9.24)  3 NOV 2015 11:43
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -405,7 +405,7 @@ File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 34.
  [2]
-<crime-histo.png, id=59, 867.24pt x 578.16pt>
+<crime-histo.png, id=63, 867.24pt x 578.16pt>
 File: crime-histo.png Graphic file (type png)
  <use crime-histo.png>
 Package pdftex.def Info: crime-histo.png used on input line 66.
@@ -415,53 +415,53 @@ Overfull \hbox (2.20006pt too wide) in paragraph at lines 79--79
 []\OT1/cmr/bx/n/17.28 The Tem-po-ral prob-lem ad-dressed through sub-
  []
 
-[4 <./crime-histo.png>] <time-1.png, id=73, 578.16pt x 433.62pt>
+[4 <./crime-histo.png>] <time-1.png, id=77, 578.16pt x 433.62pt>
 File: time-1.png Graphic file (type png)
 
 <use time-1.png>
 Package pdftex.def Info: time-1.png used on input line 93.
 (pdftex.def)             Requested size: 404.70924pt x 303.53192pt.
- <time-2.png, id=76, 578.16pt x 433.62pt>
+ <time-2.png, id=80, 578.16pt x 433.62pt>
 File: time-2.png Graphic file (type png)
  <use time-2.png>
 Package pdftex.def Info: time-2.png used on input line 99.
 (pdftex.def)             Requested size: 404.70924pt x 303.53192pt.
 
-[5] [6 <./time-1.png>] <time-3.png, id=93, 578.16pt x 433.62pt>
+[5] [6 <./time-1.png>] <time-3.png, id=97, 578.16pt x 433.62pt>
 File: time-3.png Graphic file (type png)
 
 <use time-3.png>
 Package pdftex.def Info: time-3.png used on input line 108.
 (pdftex.def)             Requested size: 404.70924pt x 303.53192pt.
- [7 <./time-2.png>] <time-4.png, id=103, 578.16pt x 433.62pt>
+ [7 <./time-2.png>] <time-4.png, id=107, 578.16pt x 433.62pt>
 File: time-4.png Graphic file (type png)
 
 <use time-4.png>
 Package pdftex.def Info: time-4.png used on input line 120.
 (pdftex.def)             Requested size: 404.70924pt x 303.53192pt.
- <time-5.png, id=104, 578.16pt x 433.62pt>
+ <time-5.png, id=108, 578.16pt x 433.62pt>
 File: time-5.png Graphic file (type png)
  <use time-5.png>
 Package pdftex.def Info: time-5.png used on input line 126.
 (pdftex.def)             Requested size: 404.70924pt x 303.53192pt.
 
-[8 <./time-3.png>] [9 <./time-4.png>] [10 <./time-5.png>] [11] [12]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 172.
- [13]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 172.
+[8 <./time-3.png>] [9 <./time-4.png>] [10 <./time-5.png>] [11] [12] [13]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 203.
 
-(./docu.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 172.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 172.
+[14]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 203.
+ (./docu.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 203.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 203.
 Package rerunfilecheck Info: File `docu.out' has not changed.
-(rerunfilecheck)             Checksum: 3AB288DD9ED369D36E820A4DC624AEAB;397.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 172.
+(rerunfilecheck)             Checksum: 26722CC3FB4532A16930F424700941F5;451.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 203.
  ) 
 Here is how much of TeX's memory you used:
- 6912 strings out of 493315
- 100746 string characters out of 6137904
+ 6916 strings out of 493315
+ 100785 string characters out of 6137904
  203291 words of memory out of 5000000
- 10230 multiletter control sequences out of 15000+600000
+ 10231 multiletter control sequences out of 15000+600000
  15200 words of font info for 57 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
  42i,7n,28p,1809b,383s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -481,10 +481,10 @@ live/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texl
 ive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/local/texli
 ve/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/local/texliv
 e/2013/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on docu.pdf (13 pages, 565910 bytes).
+Output written on docu.pdf (14 pages, 570664 bytes).
 PDF statistics:
- 199 PDF objects out of 1000 (max. 8388607)
- 154 compressed objects within 2 object streams
- 29 named destinations out of 1000 (max. 500000)
- 79 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 209 PDF objects out of 1000 (max. 8388607)
+ 163 compressed objects within 2 object streams
+ 32 named destinations out of 1000 (max. 500000)
+ 87 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -21,7 +21,7 @@
 \maketitle
 
 \begin{abstract}
-This project is incomplete and ongoing. Here I explain the problem and document my efforts in competing in the \emph{kaggle} data science competition for \emph{San Francisco Crime Classification}. The problem aspires towards the optimal prediction for the likelihood for each of 39 possible crime categories having occurred, given a training data set and measured against the test data set. The data features can be divided into two broad categories, firstly the precise time and date at which the crime was reported to police (temporal features), and secondly the location where it occurred (spatial features). Here I will steadily and systematically build up towards my chosen approach. This approach will combine a variation on a \emph{naive Bayes} method with extensive \emph{data feature engineering}. We will treat the temporal features as being independent of each other and to an extent of the spatial features. In addition we predict the time dependent behaviour by exploiting the cyclic nature of human behaviour. \emph{Python} is the main software tool used throughout this project to implement the \emph{data science} (making use of both \emph{pandas} and \emph{Scikit-learn} libraries).
+This project is ongoing. Here I explain the problem and document my efforts in competing in the \emph{kaggle} data science competition for \emph{San Francisco Crime Classification}. The problem aspires towards the optimal prediction for the likelihood for each of 39 possible crime categories having occurred, given a training data set and measured against the test data set. The data features can be divided into two broad categories, firstly the precise time and date at which the crime was reported to police (temporal features), and secondly the location where it occurred (spatial features). Here I will steadily and systematically build up towards my chosen approach. This approach will combine a variation on a \emph{naive Bayes} method with extensive \emph{data feature engineering}. We will treat the temporal features as being independent of each other and to an extent of the spatial features. In addition we predict the time dependent behaviour by exploiting the cyclic nature of human behaviour. \emph{Python} is the main software tool used throughout this project to implement the \emph{data science} (making use of both \emph{pandas} and \emph{Scikit-learn} libraries).
 \end{abstract}
 
 The latest version of this document and all of the source files for the work it refers to are publicly available from my \emph{GitHub} repository, \url{https://github.com/wilstep/frisco-crime}
@@ -162,11 +162,42 @@ after much searching using \emph{train\textunderscore test\textunderscore split}
 
 The Python script that was used to do this can be found at ``evenh\textbackslash sub.py" which uses ``evenh\textbackslash grid.py". This improved our score to 2.446, an improvement of 0.139 on our previous best, and moved us up the leaderboard to position 42 of 364. This puts us $88.5\%$ of the way to the top, which is pretty good. 
 
+\section{Logistic Regression}
+The form of logistic regression provided in the \emph{Scikit-learn} library is \emph{multinomial} logistic regression. Multinomial logistic regression uses the \emph{soft-max} function to minimise a modified version of the logarithmic loss function, when an arbitrary number of categorical outcomes need to be predicted. For the simpler case where the categorical outcomes are binary, regular logistic regression can be used which makes use of the \emph{logistic function}, a special case of the \emph{soft-max} function. The logarithmic loss function is modified by adding a sum of the logistic regression model's parameters squared. This is done to provide what is called regurlisation. The strength of the regurlisation may be adjusted, with strong regurlisation working against the data being over fitted. This provides us with opportunities to tune our logistic regression model. We can also tune the amount of regurlisation between different data features by multiplying all elements of a given data feature by some constant before feeding them into the logistic regression model for fitting. We will make use of this here, but won't document the details further, as it is too technical.
+	Here we will use regular logistic regression, because it allows us to use munged data features which are particular to each categorical outcome. So we will do a separate logistic regression for each categorical outcome to predict the probability of that outcome occurring or not occurring and we feed the log odds of our initial estimates for the probabilities of each categorical outcome into its separate logistic regression model.  \emph{n.b.} that the log odds is the inverse of the logistic function used in regular logistic regression and that multinomial logistic regression reduces to regular logistic regression when there are only two categorical outcomes, as we are doing here. These outcomes, $p_{ri}$, are then combined and renormalised to obtain the desired predictions
+\begin{equation}
+p_i = \frac{p_{ri}}{\sum_j^M p_{rj}}.
+\end{equation}
+Alternatively we could feed all of the data features into multinomial logistic regression, but this would slow things down. The way we have chosen gives us the opportunity to use more features, and we want to take advantage of this, mainly so we can fit a 5th order polynomial to the X \& Y positions in the data by feeding the large number of data features this requires into the logistic regression. 
+	We won't go into much more detail of how we implemented the logistic regression using \emph{Python} and \emph{Scikit-learn}, other than to say we split the training data and did a systematic tuning of free parameters using the script ``logistic\textbackslash tune.py". This then allowed us to prepare a submission using ``logistic\textbackslash sub.py" which resulted in a score of 2.27476. This is a sizeable improvement of 0.171 on our previous submission given above, but a considerable time has elapsed between these submissions and the competition has hotted up considerably. None the less we have moved up to position 21 of 683, which is very competitive.
 
 \section{Moving forward}
 
-For now we conclude this document by outlining the current plan moving forward. It remains to combine the temporal data with the spatial data. We will do this, making uses of Bayes' theorem. So far we have just considered the temporal data in isolation, but moving forward we will also explore the temporal analysis conditional on what PD handled the crime incident. Finally there is plenty of room to explore more of the resources available to us in the \emph{Scikit-learn} library. There is still plenty of scope for improvement before settling on our final result. That is good because there is a lot of time left in this competition, and as time goes by things become more and more competitive at the top end.
+We have skipped over a great deal of detail about the logistic regression, so it needs to be pointed out that we have close to wrung as much as we can out of it. Moving forward there is one more thing I would like to try with logistic regression. That is to divide the data into blocks, such that each address is only in a single block. Then we can do logistic regression on each of these blocks separately. This will allow for correlations between the addresses and the times the crimes are committed at to be accounted for, that the current model ignores. Having done that, the smaller data blocks could also be modelled using the \emph{support vector machine} that is available from the \emph{Scikit-learn} library. Without doing this a \emph{support vector machine} is not able to handle the large amount of data samples that the data sets for this problem have. Then we could try some ensemble averaging between the methods. We are not at the top spot, and the person who is is currently there is known to have got there legitimately, so obviously there is more that we can squeeze out of this yet.
 
-%Scikit-learn
+%\section{Logistic Regression}
+
+%Here we will combine logistic regression with a self consistent interactive approach that draws on the high crime addresses, to predict the crime rates. From Bayes' theorem we can easily derive the log odds expression
+%\begin{equation}
+%\ln\left(\frac{P(A|B)}{P(\bar{A}|B)} \right) = \ln\left(\frac{P(A)}{P(\bar{A})} \right) + \ln\left(\frac{P(B|A)}{P(B|\bar{A})} \right).
+%\end{equation}
+%Now the log odds serves as the inverse of the logistic function,
+%\begin{equation}
+%f(x)=\frac{1}{1+\exp(-x)},
+%\end{equation}
+%i.e. 
+%\begin{equation}
+%\ln\left(\frac{f(x)}{1-f(x)}\right)=x,
+%\end{equation}
+%and thus we have a means to shift our probabilities by including the quantity
+%\begin{equation}
+%\ln\left(\frac{P(B|A)}{P(B|\bar{A})} \right)
+%\end{equation}
+%as a feature in to be used with logistic regression.
+
+%Of particular interest to us here is the ability to shift the probability for an address which has had a considerable number of some crime features recorded against it. We can then shift the probability for a given crime at that address using the quantity
+%\begin{equation}
+%\ln\left(\frac{N_{Cr,A} (1-P_{cr}(X))}{N_{\bar{Cr},A}P_{cr}(X)} \right)
+%\end{equation}
 
 \end{document}  
